@@ -170,7 +170,7 @@ body.stage #miniBar{display:flex}
 #miniBar small{color:var(--text2);font-size:.72rem}
 #stageBox{padding:.3rem}
 body.stage #stageBox{background:transparent;border-color:transparent}
-body.stage #lyricBox{height:calc(100dvh - 250px);min-height:320px;padding:40vh .5rem}
+body.stage #lyricBox{height:calc(100dvh - 300px);min-height:250px;padding:45vh .5rem}
 body.stage .line .en{font-size:clamp(1rem,4vw,1.45rem)}
 body.stage .line.active .en{font-size:clamp(1.4rem,6.4vw,2.6rem);font-weight:500;letter-spacing:.3px}
 body.stage .line{padding:.75rem .9rem}
@@ -346,7 +346,11 @@ body.stage #offRow{display:flex}
       <span id="offVal">0.0s</span>
       <button class="cbtn" id="offP1">+0.1</button>
       <button class="cbtn" id="offP5">+0.5</button>
-      <button class="cbtn" id="offSnap" style="width:auto;padding:0 .7rem;font-size:.6rem" title="這句正好開始唱時按">對齊此句</button>
+      <button class="cbtn" id="offSnap" style="width:auto;padding:0 .6rem;font-size:.6rem" title="這句正好開始唱時按">對齊此句</button>
+      <span style="width:1px;height:20px;background:var(--border)"></span>
+      <button class="cbtn" id="offA" style="width:auto;padding:0 .55rem;font-size:.6rem" title="歌曲前段：某句開始唱時按">漂移A</button>
+      <button class="cbtn" id="offB" style="width:auto;padding:0 .55rem;font-size:.6rem" title="歌曲後段：某句開始唱時按">B</button>
+      <button class="cbtn" id="offReset" style="width:auto;padding:0 .55rem;font-size:.6rem">重設</button>
     </div>
   </div>
 </div>
@@ -385,6 +389,7 @@ body.stage #offRow{display:flex}
     <div class="sw"><div>單字發音口音</div><select id="voiceSel" style="width:auto;font-size:.8rem"><option value="en-US">美式 en-US</option><option value="en-GB">英式 en-GB</option><option value="en-AU">澳洲 en-AU</option></select></div>
     <div class="sw"><div>發音語速</div><select id="rateSel" style="width:auto;font-size:.8rem"><option value="0.6">很慢</option><option value="0.8" selected>慢</option><option value="1">正常</option></select></div>
     <div class="sw"><div>跳轉秒數</div><select id="stepSel" style="width:auto;font-size:.8rem"><option value="2">2 秒</option><option value="3" selected>3 秒</option><option value="5">5 秒</option><option value="10">10 秒</option></select></div>
+    <div class="sw"><div>歌詞停留位置<small style="display:block;color:var(--text2);font-size:.72rem">往左＝當前句更靠上，下方可預讀更多</small></div><input type="range" id="anchorRange" min="20" max="60" value="38" style="width:110px"></div>
     <div class="sw" style="border:none"><div>歌詞字級</div><input type="range" id="fsRange" min="90" max="150" value="100" style="width:130px"></div>
   </div>
 </div></div>
@@ -466,7 +471,7 @@ const S={
   abA:null, abB:null,
   quiz:false,
   focus:false,
-  offset:0, stage:false,
+  offset:0, scale:1, calA:null, anchor:0.38, stage:false,
   syncMode:false, syncBuf:[],
   vocab:[],
   set:{autoPause:true,autoSpeak:true,autoScroll:true,lineTrans:false,voice:'en-US',rate:.8,step:3,fs:100}
@@ -689,21 +694,21 @@ $('seek').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const d=ge
 function jumpLine(dir){
   if(!S.lines.length)return;
   let i=S.idx+dir;
-  if(dir<0&&S.idx>=0&&(getPos()+S.offset)-S.lines[S.idx].t>1.2)i=S.idx;
+  if(dir<0&&S.idx>=0&&toLyric(getPos())-S.lines[S.idx].t>1.2)i=S.idx;
   i=Math.max(0,Math.min(S.lines.length-1,i));
-  doSeek(Math.max(0,S.lines[i].t-S.offset-0.15));
+  doSeek(Math.max(0,toMedia(S.lines[i].t)-0.15));
 }
 
 /* ================= 主迴圈 ================= */
 function loop(){
   const p=getPos(),d=getDur();
-  const lp=p+S.offset;              // 套用校正後的「歌詞時間」
+  const lp=toLyric(p);              // 套用校正後的「歌詞時間」
   $('tCur').textContent=fmt(p)+' / '+fmt(d);
   $('seekFill').style.width=(d>0?Math.min(100,p/d*100):0)+'%';
   if(S.abA!==null&&S.abB!==null&&p>=S.abB)doSeek(S.abA);
   if(S.repeatLine&&S.idx>=0&&S.idx<S.lines.length){
     const nx=S.lines[S.idx+1];
-    if(nx&&lp>=nx.t)doSeek(Math.max(0,S.lines[S.idx].t-S.offset-.1));
+    if(nx&&lp>=nx.t)doSeek(Math.max(0,toMedia(S.lines[S.idx].t)-.1));
   }
   if(S.lines.length){
     let i=-1;
@@ -714,20 +719,47 @@ function loop(){
   requestAnimationFrame(loop);
 }
 
-/* ================= 歌詞校正 offset ================= */
-function setOffset(v){
-  S.offset=Math.round(v*10)/10;
-  $('offVal').textContent=(S.offset>0?'+':'')+S.offset.toFixed(1)+'s';
-  S.idx=-1;
+/* ================= 歌詞時間校正 =================
+   歌詞時間 = scale × 播放時間 + offset
+   scale=1 時就是單純平移；scale≠1 用來修正「越跑越快/越慢」的漂移 */
+function toLyric(p){return p*S.scale+S.offset}
+function toMedia(t){return (t-S.offset)/S.scale}
+function showOff(){
+  const dr=Math.abs(S.scale-1)>1e-6;
+  $('offVal').innerHTML=(S.offset>0?'+':'')+S.offset.toFixed(1)+'s'+
+    (dr?'<br><span style="font-size:.58rem;color:var(--accent)">×'+S.scale.toFixed(4)+'</span>':'');
 }
+function setOffset(v){S.offset=Math.round(v*10)/10;showOff();S.idx=-1}
 $('offM5').onclick=()=>setOffset(S.offset-0.5);
 $('offM1').onclick=()=>setOffset(S.offset-0.1);
 $('offP1').onclick=()=>setOffset(S.offset+0.1);
 $('offP5').onclick=()=>setOffset(S.offset+0.5);
 $('offSnap').onclick=()=>{
   if(S.idx<0||!S.lines[S.idx]){toast('等歌詞開始跑之後再按');return}
-  setOffset(S.lines[S.idx].t-getPos());
+  S.offset=S.lines[S.idx].t-S.scale*getPos();showOff();S.idx=-1;
   toast('已對齊，偏移 '+(S.offset>0?'+':'')+S.offset.toFixed(1)+' 秒');
+};
+/* 兩點漂移校正 */
+$('offA').onclick=()=>{
+  if(S.idx<0){toast('等歌詞跑起來再按');return}
+  S.calA={m:getPos(),l:S.lines[S.idx].t};
+  $('offA').classList.add('act');
+  toast('已記下 A 點（'+fmt(S.calA.m)+'）。快轉到歌曲後段，聽到某句開始唱時按 B',4000);
+};
+$('offB').onclick=()=>{
+  if(!S.calA){toast('請先按 A 點');return}
+  if(S.idx<0){toast('等歌詞跑起來再按');return}
+  const B={m:getPos(),l:S.lines[S.idx].t};
+  const dm=B.m-S.calA.m, dl=B.l-S.calA.l;
+  if(Math.abs(dm)<20){toast('A、B 兩點要相隔至少 20 秒才夠準',3500);return}
+  const k=dl/dm;
+  if(k<0.8||k>1.25){toast('算出的比例異常（×'+k.toFixed(3)+'），可能按錯句子了',4000);return}
+  S.scale=k;S.offset=S.calA.l-k*S.calA.m;
+  $('offA').classList.remove('act');S.calA=null;S.idx=-1;showOff();
+  toast('漂移校正完成：速度比 ×'+k.toFixed(4),4000);
+};
+$('offReset').onclick=()=>{
+  S.scale=1;S.offset=0;S.calA=null;$('offA').classList.remove('act');S.idx=-1;showOff();toast('校正已重設');
 };
 
 /* ================= 歌詞：LRC 解析 ================= */
@@ -858,7 +890,7 @@ function renderLyrics(){
     b2.onclick=async e=>{e.stopPropagation();if(zh.classList.contains('show')){zh.classList.remove('show');return}
       zh.textContent='翻譯中…';zh.classList.add('show');zh.textContent=await translate(L.text)};
     tools.appendChild(b1);tools.appendChild(b2);div.appendChild(tools);
-    div.onclick=()=>{if(L.t<1e5)doSeek(Math.max(0,L.t-S.offset-.1))};
+    div.onclick=()=>{if(L.t<1e5)doSeek(Math.max(0,toMedia(L.t)-.1))};
     box.appendChild(div);
   });
   highlight();
@@ -873,7 +905,7 @@ function highlight(){
   }
   const cur=kids[S.idx];
   if(cur&&S.set.autoScroll&&!userScrolling){
-    const target=cur.offsetTop-(box.clientHeight-cur.offsetHeight)/2;
+    const target=cur.offsetTop-box.clientHeight*S.anchor+cur.offsetHeight/2;
     box.scrollTo({top:Math.max(0,target),behavior:'smooth'});
     if(S.set.lineTrans){
       const zh=cur.querySelector('.zh');
@@ -1018,6 +1050,7 @@ document.querySelectorAll('.tg').forEach(t=>t.onclick=()=>{
 $('voiceSel').onchange=e=>{S.set.voice=e.target.value;saveSet()};
 $('rateSel').onchange=e=>{S.set.rate=e.target.value;saveSet()};
 $('stepSel').onchange=e=>{S.set.step=parseInt(e.target.value);saveSet();$('cBack').textContent='-'+S.set.step+'s';$('cFwd').textContent='+'+S.set.step+'s'};
+$('anchorRange').oninput=e=>{S.anchor=parseInt(e.target.value)/100;highlight()};
 $('fsRange').oninput=e=>{S.set.fs=e.target.value;$('lyricBox').style.fontSize=S.set.fs+'%';saveSet()};
 
 /* ================= 系統診斷 ================= */

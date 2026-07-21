@@ -158,7 +158,38 @@ textarea{resize:vertical;min-height:130px;font-family:ui-monospace,monospace;fon
 .res-item b{font-size:.88rem}
 .res-item small{color:var(--text2);font-size:.73rem;display:block;margin-top:.15rem}
 
-@media(max-width:900px){#app{padding:.8rem .9rem 10rem}.logo-txt h1{font-size:1.05rem}}
+/* ---------- 劇場模式（歌詞為主角） ---------- */
+#setupZone{transition:opacity .3s}
+body.stage #setupZone{display:none}
+body.stage header{padding:.5rem 0 .6rem;margin-bottom:.5rem}
+body.stage .logo-txt h1{font-size:1rem}
+#miniBar{display:none;align-items:center;gap:.7rem;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:.6rem .9rem;margin-bottom:.7rem;animation:fadeInUp .3s ease}
+body.stage #miniBar{display:flex}
+#miniBar .mb-txt{flex:1;min-width:0}
+#miniBar b{display:block;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#miniBar small{color:var(--text2);font-size:.72rem}
+#stageBox{padding:.3rem}
+body.stage #stageBox{background:transparent;border-color:transparent}
+body.stage #lyricBox{height:calc(100dvh - 250px);min-height:320px;padding:40vh .5rem}
+body.stage .line .en{font-size:clamp(1rem,4vw,1.45rem)}
+body.stage .line.active .en{font-size:clamp(1.4rem,6.4vw,2.6rem);font-weight:500;letter-spacing:.3px}
+body.stage .line{padding:.75rem .9rem}
+body.stage .line.active{background:transparent;box-shadow:none}
+body.stage .line.active .en{text-shadow:0 0 30px rgba(0,212,255,.45)}
+body.stage .line .zh{font-size:.95rem;margin-top:.35rem}
+/* 上下漸層遮罩，讓歌詞淡入淡出 */
+#stageBox{position:relative}
+#stageBox::before,#stageBox::after{content:'';position:absolute;left:0;right:0;height:70px;pointer-events:none;z-index:5;opacity:0;transition:opacity .3s}
+body.stage #stageBox::before{opacity:1;top:0;background:linear-gradient(var(--bg),transparent)}
+body.stage #stageBox::after{opacity:1;bottom:0;background:linear-gradient(transparent,var(--bg))}
+/* offset 校正列 */
+#offRow{display:none;align-items:center;justify-content:center;gap:.4rem;margin-top:.5rem;flex-wrap:wrap}
+body.stage #offRow{display:flex}
+#offRow .cbtn{width:34px;height:30px;font-size:.6rem}
+#offVal{font-family:'Orbitron',monospace;font-size:.68rem;color:var(--yellow);min-width:62px;text-align:center}
+/* 全螢幕 */
+:fullscreen #app{max-width:100%;padding-top:1rem}
+
 @media(max-width:600px){
   header{gap:.6rem}.logo-txt span{display:none}
   .btn{font-size:.68rem;padding:.5rem .7rem}
@@ -210,6 +241,14 @@ textarea{resize:vertical;min-height:130px;font-family:ui-monospace,monospace;fon
     </div>
   </header>
 
+  <div id="miniBar">
+    <button class="cbtn" id="mbPlay" style="width:38px;height:38px">▶</button>
+    <div class="mb-txt"><b id="mbTitle">—</b><small id="mbSub">—</small></div>
+    <button class="btn" id="btnFull" title="全螢幕">⛶</button>
+    <button class="btn" id="btnBack">換歌</button>
+  </div>
+
+  <div id="setupZone">
   <!-- 音源 -->
   <div class="card">
     <div class="card-t">
@@ -276,9 +315,10 @@ textarea{resize:vertical;min-height:130px;font-family:ui-monospace,monospace;fon
     <div id="lrcRes" style="margin-top:.8rem"></div>
     <div class="hint">歌詞來自 LRCLIB 公開資料庫（免費、免註冊）。搜不到時可到 lrclib.net 找 LRC 檔貼上，或用「手動打軸」自己對時間。</div>
   </div>
+  </div><!-- /setupZone -->
 
   <!-- 歌詞顯示 -->
-  <div class="card" style="animation-delay:.12s;padding:.6rem .5rem">
+  <div class="card" id="stageBox" style="animation-delay:.12s;padding:.6rem .5rem">
     <div id="lyricBox"><div class="empty">🎧 匯入歌曲並載入歌詞後<br>歌詞會在這裡跟著音樂跑<br><br>暫停時點任何一個單字 → 顯示翻譯與發音</div></div>
   </div>
 </div>
@@ -298,6 +338,15 @@ textarea{resize:vertical;min-height:130px;font-family:ui-monospace,monospace;fon
       <button class="cbtn" id="cAB" title="A-B 復讀 (L)">A-B</button>
       <select class="speed-sel" id="spd" title="播放速度"><option value="0.5">0.5x</option><option value="0.65">0.65x</option><option value="0.75">0.75x</option><option value="0.9">0.9x</option><option value="1" selected>1.0x</option><option value="1.25">1.25x</option></select>
       <button class="cbtn" id="cFocus" title="專注模式">👁</button>
+    </div>
+    <div id="offRow">
+      <span style="font-size:.66rem;color:var(--text2)">歌詞校正</span>
+      <button class="cbtn" id="offM5">−0.5</button>
+      <button class="cbtn" id="offM1">−0.1</button>
+      <span id="offVal">0.0s</span>
+      <button class="cbtn" id="offP1">+0.1</button>
+      <button class="cbtn" id="offP5">+0.5</button>
+      <button class="cbtn" id="offSnap" style="width:auto;padding:0 .7rem;font-size:.6rem" title="這句正好開始唱時按">對齊此句</button>
     </div>
   </div>
 </div>
@@ -417,6 +466,7 @@ const S={
   abA:null, abB:null,
   quiz:false,
   focus:false,
+  offset:0, stage:false,
   syncMode:false, syncBuf:[],
   vocab:[],
   set:{autoPause:true,autoSpeak:true,autoScroll:true,lineTrans:false,voice:'en-US',rate:.8,step:3,fs:100}
@@ -639,31 +689,46 @@ $('seek').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const d=ge
 function jumpLine(dir){
   if(!S.lines.length)return;
   let i=S.idx+dir;
-  if(dir<0&&S.idx>=0&&getPos()-S.lines[S.idx].t>1.2)i=S.idx; // 本句播超過1.2秒 → 回本句開頭
+  if(dir<0&&S.idx>=0&&(getPos()+S.offset)-S.lines[S.idx].t>1.2)i=S.idx;
   i=Math.max(0,Math.min(S.lines.length-1,i));
-  doSeek(Math.max(0,S.lines[i].t-0.15));
+  doSeek(Math.max(0,S.lines[i].t-S.offset-0.15));
 }
 
 /* ================= 主迴圈 ================= */
 function loop(){
   const p=getPos(),d=getDur();
+  const lp=p+S.offset;              // 套用校正後的「歌詞時間」
   $('tCur').textContent=fmt(p)+' / '+fmt(d);
   $('seekFill').style.width=(d>0?Math.min(100,p/d*100):0)+'%';
-  // A-B
   if(S.abA!==null&&S.abB!==null&&p>=S.abB)doSeek(S.abA);
-  // 單句循環
   if(S.repeatLine&&S.idx>=0&&S.idx<S.lines.length){
     const nx=S.lines[S.idx+1];
-    if(nx&&p>=nx.t)doSeek(Math.max(0,S.lines[S.idx].t-.1));
+    if(nx&&lp>=nx.t)doSeek(Math.max(0,S.lines[S.idx].t-S.offset-.1));
   }
-  // 歌詞高亮
   if(S.lines.length){
     let i=-1;
-    for(let k=0;k<S.lines.length;k++){if(S.lines[k].t<=p+0.05)i=k;else break}
+    for(let k=0;k<S.lines.length;k++){if(S.lines[k].t<=lp+0.05)i=k;else break}
     if(i!==S.idx){S.idx=i;highlight()}
   }
+  const mb=$('mbPlay');if(mb)mb.textContent=S.playing?'❚❚':'▶';
   requestAnimationFrame(loop);
 }
+
+/* ================= 歌詞校正 offset ================= */
+function setOffset(v){
+  S.offset=Math.round(v*10)/10;
+  $('offVal').textContent=(S.offset>0?'+':'')+S.offset.toFixed(1)+'s';
+  S.idx=-1;
+}
+$('offM5').onclick=()=>setOffset(S.offset-0.5);
+$('offM1').onclick=()=>setOffset(S.offset-0.1);
+$('offP1').onclick=()=>setOffset(S.offset+0.1);
+$('offP5').onclick=()=>setOffset(S.offset+0.5);
+$('offSnap').onclick=()=>{
+  if(S.idx<0||!S.lines[S.idx]){toast('等歌詞開始跑之後再按');return}
+  setOffset(S.lines[S.idx].t-getPos());
+  toast('已對齊，偏移 '+(S.offset>0?'+':'')+S.offset.toFixed(1)+' 秒');
+};
 
 /* ================= 歌詞：LRC 解析 ================= */
 function parseLRC(txt){
@@ -684,7 +749,25 @@ function loadLines(arr){
   S.lines=arr.map(l=>({t:l.t,text:l.text,zh:null}));
   S.idx=-1;renderLyrics();
   $('lrcStat').textContent=arr.length+' 行';$('lrcStat').className='pill tag-d';
+  enterStage();
 }
+
+/* ================= 劇場模式 ================= */
+function enterStage(){
+  S.stage=true;document.body.classList.add('stage');
+  $('mbTitle').textContent=$('trackName').textContent||'—';
+  $('mbSub').textContent=($('srcTag').textContent||'')+' · '+S.lines.length+' 行歌詞';
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(()=>{S.idx=-1;highlight()},80);
+}
+function exitStage(){S.stage=false;document.body.classList.remove('stage')}
+$('btnBack').onclick=exitStage;
+$('mbPlay').onclick=doToggle;
+$('btnFull').onclick=()=>{
+  const el=document.documentElement;
+  if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||function(){toast('此瀏覽器不支援全螢幕')}).call(el)}
+  else document.exitFullscreen();
+};
 
 /* ================= 歌詞：LRCLIB 搜尋 ================= */
 $('btnSearchLrc').onclick=async()=>{
@@ -775,7 +858,7 @@ function renderLyrics(){
     b2.onclick=async e=>{e.stopPropagation();if(zh.classList.contains('show')){zh.classList.remove('show');return}
       zh.textContent='翻譯中…';zh.classList.add('show');zh.textContent=await translate(L.text)};
     tools.appendChild(b1);tools.appendChild(b2);div.appendChild(tools);
-    div.onclick=()=>{if(L.t<1e5)doSeek(Math.max(0,L.t-.1))};
+    div.onclick=()=>{if(L.t<1e5)doSeek(Math.max(0,L.t-S.offset-.1))};
     box.appendChild(div);
   });
   highlight();

@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LYRIC LAB — 用英文歌學英文</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050a14; --bg2:#0b1425; --bg3:#111d35;
+  --accent:#00d4ff; --accent2:#7b5ea7; --accent3:#ff6b35;
+  --green:#00ff9d; --yellow:#ffd666;
+  --text:#e8f4fd; --text2:#7fa8c9;
+  --border:rgba(0,212,255,0.15);
+  --card-bg:rgba(11,20,37,0.9);
+  --glow:0 0 20px rgba(0,212,255,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 20%, rgba(0,212,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 50%, rgba(123,94,167,0.6) 0%, transparent 100%);
+  background-size:300px 300px,400px 400px,200px 200px,350px 350px,250px 250px;
+  animation:drift 80s linear infinite;pointer-events:none;z-index:0}
+@keyframes drift{from{background-position:0 0,0 0,0 0,0 0,0 0}to{background-position:300px 300px,-400px 400px,200px -200px,-350px 350px,250px -250px}}
+.particle{position:fixed;width:3px;height:3px;border-radius:50%;background:var(--accent);pointer-events:none;z-index:1;animation:float-particle linear infinite;opacity:0}
+@keyframes float-particle{0%{opacity:0;transform:translateY(100vh) scale(0)}10%{opacity:.6}90%{opacity:.3}100%{opacity:0;transform:translateY(-100px) scale(1.5)}}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,255,.3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,255,.5)}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+
+/* ---------- 密碼閘門 ---------- */
+#gate{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:1.5rem}
+.gate-box{width:100%;max-width:400px;background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;text-align:center;backdrop-filter:blur(10px);box-shadow:var(--glow);animation:modalIn .4s ease}
+.gate-box h1{font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;letter-spacing:2px;color:var(--accent);text-shadow:0 0 18px rgba(0,212,255,.5);margin-bottom:.4rem}
+.gate-box p{color:var(--text2);font-size:.85rem;margin-bottom:1.6rem}
+.gate-icon{margin-bottom:1rem;animation:pulse 2.5s ease infinite}
+#gatePw{width:100%;padding:.85rem 1rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Orbitron',monospace;font-size:1rem;text-align:center;letter-spacing:4px;outline:none;transition:all .2s}
+#gatePw:focus{border-color:rgba(0,212,255,.5);box-shadow:0 0 14px rgba(0,212,255,.2)}
+#gateMsg{color:var(--accent3);font-size:.8rem;height:1.2rem;margin-top:.6rem}
+.gate-hint{margin-top:1.2rem;font-size:.7rem;color:var(--text2);opacity:.6;line-height:1.6}
+
+/* ---------- 版面 ---------- */
+#app{display:none;position:relative;z-index:10;max-width:1180px;margin:0 auto;padding:1rem 1.2rem 9rem}
+header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 0 1.2rem;border-bottom:1px solid var(--border);margin-bottom:1.2rem;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:.7rem}
+.logo-txt h1{font-family:'Orbitron',monospace;font-size:1.25rem;font-weight:900;letter-spacing:2px;color:var(--accent);text-shadow:0 0 14px rgba(0,212,255,.45);line-height:1.2}
+.logo-txt span{font-size:.72rem;color:var(--text2);letter-spacing:1px}
+.hbtns{display:flex;gap:.5rem;flex-wrap:wrap}
+.btn{font-family:'Orbitron',monospace;font-size:.75rem;letter-spacing:1px;padding:.55rem .9rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
+.btn:hover{border-color:rgba(0,212,255,.4);color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,212,255,.15)}
+.btn:active{transform:translateY(0)}
+.btn.primary{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.4);color:var(--accent)}
+.btn.on{background:rgba(0,255,157,.14);border-color:rgba(0,255,157,.45);color:var(--green)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:1.1rem;margin-bottom:1rem;animation:fadeInUp .4s ease backwards}
+.card-t{font-family:'Orbitron',monospace;font-size:.8rem;letter-spacing:1.5px;color:var(--accent);margin-bottom:.85rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.tabs{display:flex;gap:.4rem;margin-bottom:.9rem;flex-wrap:wrap}
+.tab{font-family:'Orbitron',monospace;font-size:.72rem;letter-spacing:1px;padding:.5rem .95rem;border-radius:50px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .2s}
+.tab.active{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.45);color:var(--accent)}
+.row{display:flex;gap:.5rem;flex-wrap:wrap}
+.row>input{flex:1;min-width:180px}
+input[type=text],input[type=password],textarea,select{width:100%;padding:.7rem .85rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Noto Sans TC',sans-serif;font-size:.9rem;outline:none;transition:all .2s}
+input:focus,textarea:focus,select:focus{border-color:rgba(0,212,255,.45)}
+textarea{resize:vertical;min-height:130px;font-family:ui-monospace,monospace;font-size:.82rem;line-height:1.6}
+.hint{font-size:.72rem;color:var(--text2);line-height:1.7;margin-top:.6rem}
+.pane{display:none}.pane.active{display:block}
+#embedWrap{margin-top:.9rem;border-radius:12px;overflow:hidden;min-height:0}
+#nowInfo{display:none;align-items:center;gap:.6rem;margin-top:.8rem;font-size:.85rem;color:var(--text2);flex-wrap:wrap}
+#nowInfo b{color:var(--text);font-weight:500}
+.pill{font-family:'Orbitron',monospace;font-size:.62rem;letter-spacing:1px;padding:.25rem .6rem;border-radius:50px;border:1px solid;display:inline-block}
+.tag-a{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.4);color:var(--accent)}
+.tag-d{background:rgba(0,255,157,.15);border-color:rgba(0,255,157,.4);color:var(--green)}
+.tag-e{background:rgba(255,200,60,.15);border-color:rgba(255,200,60,.4);color:var(--yellow)}
+.tag-c{background:rgba(255,107,53,.15);border-color:rgba(255,107,53,.4);color:#ff9066}
+
+/* ---------- 歌詞區 ---------- */
+#lyricBox{height:52vh;min-height:300px;overflow-y:auto;padding:22vh .4rem;scroll-behavior:smooth}
+#lyricBox.focus-mode{height:34vh;min-height:190px;padding:14vh .4rem}
+.line{padding:.5rem .7rem;border-radius:10px;cursor:default;transition:all .25s;position:relative;line-height:1.75}
+.line .en{font-size:1.02rem;color:var(--text2);transition:all .25s;word-spacing:1px}
+.line.active{background:rgba(0,212,255,.07);box-shadow:inset 3px 0 0 var(--accent)}
+.line.active .en{color:var(--text);font-size:1.16rem;text-shadow:0 0 16px rgba(0,212,255,.28)}
+.line.past .en{opacity:.4}
+#lyricBox.focus-mode .line{display:none}
+#lyricBox.focus-mode .line.active,#lyricBox.focus-mode .line.near{display:block}
+.line .zh{font-size:.82rem;color:var(--accent2);margin-top:.2rem;display:none;filter:brightness(1.5)}
+.line .zh.show{display:block}
+.w{cursor:pointer;border-radius:4px;padding:0 1px;transition:all .15s;display:inline-block}
+.w:hover{background:rgba(0,212,255,.2);color:var(--accent)}
+.w.saved{color:var(--yellow);border-bottom:1px dashed var(--yellow)}
+.w.blank{background:var(--bg3);border-bottom:2px solid var(--accent3);color:transparent;min-width:2.6em;text-align:center}
+.w.blank.revealed{background:rgba(255,214,102,.15);color:var(--yellow)}
+.line-tools{position:absolute;right:.4rem;top:.35rem;display:none;gap:.25rem}
+.line:hover .line-tools,.line.active .line-tools{display:flex}
+.mini{width:26px;height:26px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.mini:hover{color:var(--accent);border-color:rgba(0,212,255,.4)}
+.empty{text-align:center;color:var(--text2);padding:3rem 1rem;font-size:.88rem;line-height:2}
+
+/* ---------- 播放列 ---------- */
+#bar{position:fixed;left:0;right:0;bottom:0;z-index:200;background:rgba(5,10,20,.94);backdrop-filter:blur(14px);border-top:1px solid var(--border);padding:.6rem 1rem calc(.6rem + env(safe-area-inset-bottom));display:none}
+.bar-in{max-width:1180px;margin:0 auto}
+#seek{width:100%;height:4px;background:var(--bg3);border-radius:3px;cursor:pointer;position:relative;margin-bottom:.55rem;overflow:visible}
+#seekFill{height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:3px;position:relative}
+#seekFill::after{content:'';position:absolute;right:-5px;top:-3px;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+#abZone{position:absolute;top:0;height:100%;background:rgba(255,214,102,.35);border-radius:3px;display:none}
+.ctrls{display:flex;align-items:center;justify-content:center;gap:.4rem;flex-wrap:wrap}
+.cbtn{width:40px;height:40px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:.62rem;transition:all .2s;flex-shrink:0}
+.cbtn:hover{color:var(--accent);border-color:rgba(0,212,255,.45);box-shadow:0 0 12px rgba(0,212,255,.2)}
+.cbtn.big{width:50px;height:50px;background:rgba(0,212,255,.14);border-color:rgba(0,212,255,.45);color:var(--accent)}
+.cbtn.act{color:var(--green);border-color:rgba(0,255,157,.45);background:rgba(0,255,157,.1)}
+.time{font-family:'Orbitron',monospace;font-size:.68rem;color:var(--text2);min-width:88px;text-align:center;letter-spacing:1px}
+.speed-sel{width:auto;padding:.4rem .5rem;font-size:.72rem;font-family:'Orbitron',monospace}
+
+/* ---------- Modal ---------- */
+.ov{position:fixed;inset:0;background:rgba(2,5,12,.82);backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center;padding:1.2rem}
+.ov.show{display:flex}
+.modal{background:var(--bg2);border:1px solid rgba(0,212,255,.28);border-radius:20px;width:100%;max-width:520px;max-height:86vh;overflow-y:auto;animation:modalIn .28s ease;box-shadow:0 20px 60px rgba(0,0,0,.6),var(--glow)}
+.modal-h{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;position:sticky;top:0;background:var(--bg2);z-index:2}
+.modal-h h3{font-family:'Orbitron',monospace;font-size:.95rem;letter-spacing:1px;color:var(--accent)}
+.x{width:30px;height:30px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0}
+.x:hover{color:var(--accent3)}
+.modal-b{padding:1.4rem}
+.word-head{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:.3rem}
+.word-head h2{font-family:'Orbitron',monospace;font-size:1.5rem;color:var(--text);word-break:break-word}
+.phon{font-family:ui-monospace,monospace;color:var(--yellow);font-size:.9rem;margin-bottom:1rem}
+.sec{margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--border)}
+.sec-t{font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:1.5px;color:var(--text2);margin-bottom:.5rem}
+.trans{font-size:1.15rem;color:var(--green);line-height:1.7}
+.def{font-size:.86rem;color:var(--text);line-height:1.75;margin-bottom:.5rem}
+.def em{color:var(--accent2);filter:brightness(1.5);font-style:normal;font-family:'Orbitron',monospace;font-size:.68rem;margin-right:.4rem}
+.def .ex{color:var(--text2);font-size:.8rem;font-style:italic}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.vocab-item{display:flex;align-items:flex-start;gap:.7rem;padding:.7rem 0;border-bottom:1px solid var(--border)}
+.vocab-item b{font-family:'Orbitron',monospace;color:var(--accent);font-size:.9rem}
+.vocab-item small{color:var(--text2);display:block;font-size:.75rem;margin-top:.15rem;line-height:1.5}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.tg{width:44px;height:24px;border-radius:50px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;position:relative;flex-shrink:0;transition:all .2s}
+.tg::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--text2);transition:all .25s}
+.tg.on{background:rgba(0,255,157,.2);border-color:rgba(0,255,157,.5)}
+.tg.on::after{left:22px;background:var(--green)}
+.kbd{font-family:'Orbitron',monospace;font-size:.62rem;padding:.15rem .45rem;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--accent)}
+#toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid rgba(0,212,255,.4);color:var(--text);padding:.65rem 1.2rem;border-radius:50px;font-size:.82rem;z-index:800;opacity:0;pointer-events:none;transition:all .3s;box-shadow:var(--glow);max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.res-item{padding:.65rem .8rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem;cursor:pointer;transition:all .2s}
+.res-item:hover{border-color:rgba(0,212,255,.45);transform:translateX(4px)}
+.res-item b{font-size:.88rem}
+.res-item small{color:var(--text2);font-size:.73rem;display:block;margin-top:.15rem}
+
+@media(max-width:900px){#app{padding:.8rem .9rem 10rem}.logo-txt h1{font-size:1.05rem}}
+@media(max-width:600px){
+  header{gap:.6rem}.logo-txt span{display:none}
+  .btn{font-size:.68rem;padding:.5rem .7rem}
+  #lyricBox{height:46vh;padding:20vh .2rem}
+  .line .en{font-size:.98rem}.line.active .en{font-size:1.1rem}
+  .ov{padding:0;align-items:flex-end}
+  .modal{border-radius:20px 20px 0 0;max-width:100%;max-height:92dvh}
+  .time{min-width:76px;font-size:.62rem}
+  .cbtn{width:38px;height:38px}.cbtn.big{width:46px;height:46px}
+}
+</style>
+</head>
+<body>
+<div id="particles"></div>
+
+<!-- ============ 密碼閘門 ============ -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-icon">
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round">
+        <rect x="4" y="10.5" width="16" height="10" rx="2.5"/>
+        <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
+        <circle cx="12" cy="15.5" r="1.4" fill="#00d4ff" stroke="none"/>
+      </svg>
+    </div>
+    <h1>LYRIC LAB</h1>
+    <p>用英文歌學英文 · 需要通行碼</p>
+    <input type="password" id="gatePw" placeholder="••••••" autocomplete="off" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <div id="gateMsg"></div>
+    <button class="btn primary" style="width:100%;justify-content:center;margin-top:.5rem" id="gateBtn">ENTER</button>
+    <div class="gate-hint">※ 此為前端驗證，僅用於一般遮擋，不具真正安全性</div>
+  </div>
+</div>
+
+<!-- ============ 主程式 ============ -->
+<div id="app">
+  <header>
+    <div class="logo">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="16.5" cy="16" r="2.6"/>
+      </svg>
+      <div class="logo-txt"><h1>LYRIC LAB</h1><span>LEARN ENGLISH WITH MUSIC</span></div>
+    </div>
+    <div class="hbtns">
+      <button class="btn" id="btnVocab">生字本 <span id="vocabCount" class="pill tag-e">0</span></button>
+      <button class="btn" id="btnQuiz">挖空模式</button>
+      <button class="btn" id="btnSet">設定</button>
+      <button class="btn" id="btnHelp">?</button>
+    </div>
+  </header>
+
+  <!-- 音源 -->
+  <div class="card">
+    <div class="card-t">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+      STEP 1 · 選擇音源
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-pane="paneYt" data-mode="yt">YouTube <span class="pill tag-d" style="margin-left:.3rem">推薦</span></div>
+      <div class="tab" data-pane="paneSp" data-mode="spotify">Spotify</div>
+      <div class="tab" data-pane="paneLoc" data-mode="local">本機音檔</div>
+    </div>
+
+    <div class="pane active" id="paneYt">
+      <div class="row">
+        <input type="text" id="ytUrl" placeholder="貼上 YouTube 連結，或直接打歌名搜尋">
+        <button class="btn primary" id="btnYtLoad">匯入</button>
+      </div>
+      <div id="ytWrap" style="margin-top:.9rem;border-radius:12px;overflow:hidden"><div id="ytEl"></div></div>
+      <div class="hint">
+        · 支援 <b>youtube.com/watch</b>、<b>youtu.be</b>、<b>Shorts</b>、<b>music.youtube.com</b> 連結。<br>
+        · 免登入、可播完整首，而且<b>支援 0.25x～2x 變速</b>，練聽力最好用。<br>
+        · 少數影片被作者禁止嵌入，換一個版本（例如 Lyrics / Audio 版）即可。
+      </div>
+    </div>
+
+    <div class="pane" id="paneSp">
+      <div class="row">
+        <input type="text" id="spUrl" placeholder="貼上 Spotify 歌曲連結，例：https://open.spotify.com/track/...">
+        <button class="btn primary" id="btnSpLoad">匯入</button>
+      </div>
+      <div id="embedWrap"><div id="embedEl"></div></div>
+      <div class="hint">
+        · <b style="color:#ff9066">手機分享出來的 spotify.link 短網址無法使用</b>。請在 Spotify App 點歌曲「⋯」→ 分享 → <b>複製歌曲連結</b>，網址要長得像 <code>open.spotify.com/track/...</code>。<br>
+        · 未登入 Spotify 只會播放 30 秒試聽片段；在同一瀏覽器登入 <b>Spotify Premium</b> 才能播完整首。<br>
+        · Spotify 嵌入播放器<b>不支援變速</b>，想放慢練聽力請用 YouTube 或本機音檔。
+      </div>
+    </div>
+
+    <div class="pane" id="paneLoc">
+      <button class="btn primary" id="btnFile">選擇 MP3 / M4A / WAV 檔案</button>
+      <input type="file" id="fileIn" accept="audio/*" style="display:none">
+      <div class="hint">本機音檔完全在你的裝置上播放，不會上傳。支援 0.5x～1.25x 變速、A-B 復讀，最適合精聽練習。</div>
+    </div>
+
+    <div id="nowInfo">
+      <span class="pill tag-a" id="srcTag">—</span>
+      <b id="trackName">尚未載入</b><span id="trackArtist"></span>
+    </div>
+  </div>
+
+  <!-- 歌詞來源 -->
+  <div class="card" style="animation-delay:.06s">
+    <div class="card-t">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h11M4 18h14"/></svg>
+      STEP 2 · 取得歌詞
+      <span class="pill tag-d" id="lrcStat">未載入</span>
+    </div>
+    <div class="row">
+      <input type="text" id="qTitle" placeholder="歌名（英文）">
+      <input type="text" id="qArtist" placeholder="歌手">
+      <button class="btn primary" id="btnSearchLrc">搜尋逐行歌詞</button>
+      <button class="btn" id="btnPasteLrc">手動貼上</button>
+    </div>
+    <div id="lrcRes" style="margin-top:.8rem"></div>
+    <div class="hint">歌詞來自 LRCLIB 公開資料庫（免費、免註冊）。搜不到時可到 lrclib.net 找 LRC 檔貼上，或用「手動打軸」自己對時間。</div>
+  </div>
+
+  <!-- 歌詞顯示 -->
+  <div class="card" style="animation-delay:.12s;padding:.6rem .5rem">
+    <div id="lyricBox"><div class="empty">🎧 匯入歌曲並載入歌詞後<br>歌詞會在這裡跟著音樂跑<br><br>暫停時點任何一個單字 → 顯示翻譯與發音</div></div>
+  </div>
+</div>
+
+<!-- ============ 播放列 ============ -->
+<div id="bar">
+  <div class="bar-in">
+    <div id="seek"><div id="abZone"></div><div id="seekFill"></div></div>
+    <div class="ctrls">
+      <span class="time" id="tCur">0:00 / 0:00</span>
+      <button class="cbtn" id="cPrev" title="上一句 (↑)">◀|</button>
+      <button class="cbtn" id="cBack">-3s</button>
+      <button class="cbtn big" id="cPlay" title="播放/暫停 (空白鍵)">▶</button>
+      <button class="cbtn" id="cFwd">+3s</button>
+      <button class="cbtn" id="cNext" title="下一句 (↓)">|▶</button>
+      <button class="cbtn" id="cRep" title="單句循環 (R)">🔁</button>
+      <button class="cbtn" id="cAB" title="A-B 復讀 (L)">A-B</button>
+      <select class="speed-sel" id="spd" title="播放速度"><option value="0.5">0.5x</option><option value="0.65">0.65x</option><option value="0.75">0.75x</option><option value="0.9">0.9x</option><option value="1" selected>1.0x</option><option value="1.25">1.25x</option></select>
+      <button class="cbtn" id="cFocus" title="專注模式">👁</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modals ============ -->
+<div class="ov" id="ovWord"><div class="modal" style="max-width:480px">
+  <div class="modal-h"><h3>WORD</h3><button class="x" data-close>×</button></div>
+  <div class="modal-b" id="wordBody"></div>
+</div></div>
+
+<div class="ov" id="ovVocab"><div class="modal">
+  <div class="modal-h"><h3>我的生字本</h3><div style="display:flex;gap:.4rem"><button class="btn" id="btnExport">匯出CSV</button><button class="x" data-close>×</button></div></div>
+  <div class="modal-b" id="vocabBody"></div>
+</div></div>
+
+<div class="ov" id="ovPaste"><div class="modal">
+  <div class="modal-h"><h3>貼上歌詞</h3><button class="x" data-close>×</button></div>
+  <div class="modal-b">
+    <div class="hint" style="margin:0 0 .7rem">支援 <b>LRC 格式</b>（有 [00:12.34] 時間標籤，會自動跟著跑）或<b>純文字歌詞</b>（一行一句，之後可用「手動打軸」對時間）。</div>
+    <textarea id="pasteArea" placeholder="[00:12.34]Hello, is it me you're looking for&#10;[00:16.20]I can see it in your eyes"></textarea>
+    <div class="row" style="margin-top:.8rem">
+      <button class="btn primary" id="btnApplyPaste" style="flex:1;justify-content:center">套用</button>
+      <button class="btn" id="btnSyncMode" style="flex:1;justify-content:center">手動打軸</button>
+    </div>
+    <div class="hint">手動打軸：播放歌曲，每聽到新的一句就按一次「打點」（或空白鍵），系統會記下時間。</div>
+  </div>
+</div></div>
+
+<div class="ov" id="ovSet"><div class="modal">
+  <div class="modal-h"><h3>設定</h3><button class="x" data-close>×</button></div>
+  <div class="modal-b">
+    <div class="sw"><div>點字時自動暫停<small style="display:block;color:var(--text2);font-size:.72rem">點單字查詢時自動把音樂停下來</small></div><div class="tg on" data-set="autoPause"></div></div>
+    <div class="sw"><div>開啟小視窗時自動唸<small style="display:block;color:var(--text2);font-size:.72rem">跳出視窗立刻播放該字發音</small></div><div class="tg on" data-set="autoSpeak"></div></div>
+    <div class="sw"><div>歌詞自動捲動</div><div class="tg on" data-set="autoScroll"></div></div>
+    <div class="sw"><div>顯示整句中譯<small style="display:block;color:var(--text2);font-size:.72rem">目前播放句下方顯示中文翻譯</small></div><div class="tg" data-set="lineTrans"></div></div>
+    <div class="sw"><div>單字發音口音</div><select id="voiceSel" style="width:auto;font-size:.8rem"><option value="en-US">美式 en-US</option><option value="en-GB">英式 en-GB</option><option value="en-AU">澳洲 en-AU</option></select></div>
+    <div class="sw"><div>發音語速</div><select id="rateSel" style="width:auto;font-size:.8rem"><option value="0.6">很慢</option><option value="0.8" selected>慢</option><option value="1">正常</option></select></div>
+    <div class="sw"><div>跳轉秒數</div><select id="stepSel" style="width:auto;font-size:.8rem"><option value="2">2 秒</option><option value="3" selected>3 秒</option><option value="5">5 秒</option><option value="10">10 秒</option></select></div>
+    <div class="sw" style="border:none"><div>歌詞字級</div><input type="range" id="fsRange" min="90" max="150" value="100" style="width:130px"></div>
+  </div>
+</div></div>
+
+<div class="ov" id="ovHelp"><div class="modal">
+  <div class="modal-h"><h3>使用說明</h3><button class="x" data-close>×</button></div>
+  <div class="modal-b" style="font-size:.86rem;line-height:1.9;color:var(--text2)">
+    <div class="sec-t">怎麼用</div>
+    1. 貼 Spotify 連結匯入（或選本機 MP3）<br>
+    2. 按「搜尋逐行歌詞」抓歌詞<br>
+    3. 播放 → 歌詞自動跟著跑<br>
+    4. 遇到不會的字 <b style="color:var(--accent)">直接點它</b> → 自動暫停 + 跳出翻譯/發音<br>
+    5. 在小視窗按「加入生字本」，之後可匯出 CSV 丟進 Anki
+    <div class="sec"><div class="sec-t">鍵盤快捷鍵</div>
+      <span class="kbd">SPACE</span> 播放/暫停　<span class="kbd">←</span><span class="kbd">→</span> 前後跳轉<br>
+      <span class="kbd">↑</span><span class="kbd">↓</span> 上/下一句　<span class="kbd">R</span> 單句循環<br>
+      <span class="kbd">L</span> A-B 復讀　<span class="kbd">F</span> 專注模式　<span class="kbd">ESC</span> 關閉視窗
+    </div>
+    <div class="sec"><div class="sec-t">練習技巧</div>
+      · <b>A-B 復讀</b>：按一下設 A 點，再按一下設 B 點，該段會無限重播<br>
+      · <b>挖空模式</b>：隨機把單字挖掉，邊聽邊點開答案，練聽力最有效<br>
+      · <b>本機音檔 0.65x</b>：連音聽不清楚時放慢，比重播 10 次有用
+    </div>
+    <div class="sec"><div class="sec-t">資料來源</div>
+      歌詞 LRCLIB · 字典 dictionaryapi.dev · 翻譯 Google Translate / MyMemory · 發音 瀏覽器語音合成
+    </div>
+    <div class="sec">
+      <div class="sec-t">系統診斷</div>
+      <div style="font-size:.8rem;margin-bottom:.6rem">播不出來時按這個，會檢查各項服務是否被你的環境擋掉。</div>
+      <button class="btn primary" id="btnDiag" style="width:100%;justify-content:center">開始檢測</button>
+      <div id="diagOut" style="margin-top:.8rem;font-size:.8rem;line-height:2;font-family:ui-monospace,monospace"></div>
+    </div>
+  </div>
+</div></div>
+
+<div id="toast"></div>
+
+<script>
+/* ================= 儲存（相容無 storage 環境） ================= */
+const mem={};
+const ST={
+  get(k){try{return localStorage.getItem(k)}catch(e){return k in mem?mem[k]:null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){mem[k]=v}}
+};
+
+/* ================= 粒子 ================= */
+(function(){const c=document.getElementById('particles');for(let i=0;i<15;i++){const p=document.createElement('div');p.className='particle';p.style.cssText=`left:${Math.random()*100}%;width:${Math.random()*3+1}px;height:${Math.random()*3+1}px;animation-duration:${Math.random()*15+10}s;animation-delay:${Math.random()*10}s;opacity:${Math.random()*.5};background:${Math.random()>.5?'#00d4ff':'#7b5ea7'};`;c.appendChild(p)}})();
+
+/* ================= 密碼閘門 ================= */
+const PW_HASH=3478599737; // 'vip666' 的雜湊值
+function hash(s){let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0}return h>>>0}
+const gate=document.getElementById('gate'),gatePw=document.getElementById('gatePw'),gateMsg=document.getElementById('gateMsg');
+function tryEnter(){
+  const raw=gatePw.value.replace(/\s+/g,'').toLowerCase();
+  if(hash(raw)===PW_HASH||raw==='vip666'){
+    ST.set('ll_auth','1');gate.style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('bar').style.display='block';
+    initApp();
+  }else{gateMsg.textContent='通行碼錯誤';gatePw.value='';gatePw.focus();
+    gatePw.style.borderColor='rgba(255,107,53,.6)';setTimeout(()=>gatePw.style.borderColor='',900)}
+}
+document.getElementById('gateBtn').onclick=tryEnter;
+gatePw.addEventListener('keydown',e=>{if(e.key==='Enter')tryEnter()});
+if(ST.get('ll_auth')==='1'){gate.style.display='none';document.getElementById('app').style.display='block';document.getElementById('bar').style.display='block';setTimeout(()=>initApp(),0)}
+else{setTimeout(()=>gatePw.focus(),300)}
+
+/* ================= 全域狀態 ================= */
+const S={
+  mode:'spotify',        // spotify | local
+  ctrl:null,             // Spotify EmbedController
+  audio:null,            // HTMLAudioElement
+  playing:false,
+  pos:0, dur:0,
+  lastUpdate:0, lastPos:0,
+  lines:[],              // {t, text, words[], zh}
+  idx:-1,
+  repeatLine:false,
+  abA:null, abB:null,
+  quiz:false,
+  focus:false,
+  syncMode:false, syncBuf:[],
+  vocab:[],
+  set:{autoPause:true,autoSpeak:true,autoScroll:true,lineTrans:false,voice:'en-US',rate:.8,step:3,fs:100}
+};
+
+/* ================= 工具 ================= */
+const $=id=>document.getElementById(id);
+function toast(msg,ms=2000){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms)}
+function fmt(s){s=Math.max(0,s||0);return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')}
+
+/* ================= 初始化 ================= */
+function initApp(){
+  try{const v=ST.get('ll_vocab');if(v)S.vocab=JSON.parse(v)}catch(e){}
+  try{const s=ST.get('ll_set');if(s)Object.assign(S.set,JSON.parse(s))}catch(e){}
+  applySettings();renderVocabCount();
+  loop();
+}
+function saveSet(){ST.set('ll_set',JSON.stringify(S.set))}
+function applySettings(){
+  document.querySelectorAll('.tg').forEach(t=>t.classList.toggle('on',!!S.set[t.dataset.set]));
+  $('voiceSel').value=S.set.voice;$('rateSel').value=S.set.rate;$('stepSel').value=S.set.step;
+  $('fsRange').value=S.set.fs;$('lyricBox').style.fontSize=S.set.fs+'%';
+}
+
+/* ================= Tabs ================= */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');$(t.dataset.pane).classList.add('active');
+  S.mode=t.dataset.mode;
+  $('spd').disabled=S.mode==='spotify';
+});
+$('spd').disabled=false;
+
+/* ================= YouTube ================= */
+let ytReady=false,ytPlayer=null;
+window.onYouTubeIframeAPIReady=()=>{ytReady=true};
+(function(){const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;document.head.appendChild(s)})();
+
+function parseYT(url){
+  url=String(url).trim();
+  let m=url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if(m)return m[1];
+  if(/^[A-Za-z0-9_-]{11}$/.test(url))return url;
+  return null;
+}
+$('btnYtLoad').onclick=async()=>{
+  const raw=$('ytUrl').value.trim();
+  if(!raw){toast('請貼上 YouTube 連結');return}
+  const id=parseYT(raw);
+  if(!id){
+    window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(raw+' lyrics'),'_blank');
+    toast('已幫你開啟 YouTube 搜尋，找到後複製網址回來貼上',3500);
+    return;
+  }
+  if(!ytReady||!window.YT||!YT.Player){toast('YouTube 播放器還在載入，2 秒後再按一次');return}
+  if(S.audio){S.audio.pause();S.audio=null}
+  if(S.ctrl){try{S.ctrl.pause()}catch(x){}}
+  S.mode='yt';$('spd').disabled=false;
+
+  $('ytWrap').innerHTML='<div id="ytEl"></div>';
+  ytPlayer=new YT.Player('ytEl',{
+    height:'200',width:'100%',videoId:id,
+    playerVars:{playsinline:1,rel:0,modestbranding:1},
+    events:{
+      onReady:()=>{S.dur=ytPlayer.getDuration()||0;try{ytPlayer.setPlaybackRate(parseFloat($('spd').value))}catch(e){}},
+      onStateChange:e=>{S.playing=(e.data===1);$('cPlay').textContent=S.playing?'❚❚':'▶';
+        if(e.data===1)S.dur=ytPlayer.getDuration()||0;},
+      onError:()=>toast('這支影片不允許嵌入播放，請換一個版本（搜「歌名 lyrics」）',4000)
+    }
+  });
+  $('srcTag').textContent='YOUTUBE';$('srcTag').className='pill tag-c';
+  $('nowInfo').style.display='flex';$('trackName').textContent='載入中…';
+  try{
+    const r=await fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id));
+    const j=await r.json();
+    const title=(j.title||'').trim();
+    $('trackName').textContent=title||'YouTube 影片';
+    let clean=title.replace(/\((official|lyric|lyrics|audio|video|mv|hd|4k)[^)]*\)/gi,'')
+                   .replace(/\[(official|lyric|lyrics|audio|video|mv|hd|4k)[^\]]*\]/gi,'')
+                   .replace(/(official\s*(music\s*)?video|lyric video|official audio)/gi,'').trim();
+    let t=clean,a=j.author_name||'';
+    if(clean.includes(' - ')){const p=clean.split(' - ');a=p[0].trim();t=p.slice(1).join(' - ').trim()}
+    $('qTitle').value=t;$('qArtist').value=(a||'').replace(/\s*-\s*Topic$/i,'');
+    toast('已匯入，接著按「搜尋逐行歌詞」');
+  }catch(e){$('trackName').textContent='YouTube 影片';toast('已匯入（請手動填歌名搜歌詞）')}
+};
+
+/* ================= Spotify ================= */
+let spReady=false,spAPI=null;
+window.onSpotifyIframeApiReady=(IFrameAPI)=>{spAPI=IFrameAPI;spReady=true};
+(function(){const s=document.createElement('script');s.src='https://open.spotify.com/embed/iframe-api/v1';s.async=true;document.head.appendChild(s)})();
+
+function parseSpotify(url){
+  const m=String(url).match(/track[/:]([A-Za-z0-9]{22})/);
+  return m?m[1]:null;
+}
+$('btnSpLoad').onclick=async()=>{
+  const raw=$('spUrl').value.trim();
+  const id=parseSpotify(raw);
+  if(!id){
+    if(/spotify\.link|spoti\.fi/i.test(raw)){
+      toast('這是手機分享的短網址，無法解析。請改用「複製歌曲連結」取得 open.spotify.com/track/... 的網址',5000);
+    }else if(/album|playlist|artist|episode/i.test(raw)){
+      toast('目前只支援單曲（track）連結，不支援專輯或播放清單',4000);
+    }else{
+      toast('請貼上有效的 Spotify 歌曲連結');
+    }
+    return;
+  }
+  if(!spReady||!spAPI){toast('Spotify 播放器還在載入，請稍等 2 秒再試');return}
+  if(S.audio){S.audio.pause();S.audio=null}
+  if(ytPlayer&&ytPlayer.pauseVideo){try{ytPlayer.pauseVideo()}catch(x){}}
+  S.mode='spotify';$('spd').disabled=true;
+  // 重建容器避免重複掛載
+  $('embedWrap').innerHTML='<div id="embedEl"></div>';
+  spAPI.createController($('embedEl'),{uri:'spotify:track:'+id,width:'100%',height:'80'},(EC)=>{
+    S.ctrl=EC;
+    EC.addListener('playback_update',e=>{
+      const d=e.data;
+      S.pos=(d.position||0)/1000;S.dur=(d.duration||0)/1000;
+      S.playing=!d.isPaused;S.lastUpdate=performance.now();S.lastPos=S.pos;
+      $('cPlay').textContent=S.playing?'❚❚':'▶';
+    });
+  });
+  $('srcTag').textContent='SPOTIFY';$('srcTag').className='pill tag-d';
+  $('nowInfo').style.display='flex';$('trackName').textContent='載入中…';
+  // 取歌名/歌手
+  try{
+    const r=await fetch('https://open.spotify.com/oembed?url=https://open.spotify.com/track/'+id);
+    const j=await r.json();
+    const full=(j.title||'').trim();
+    $('trackName').textContent=full||'Spotify 曲目';
+    let t=full,a='';
+    if(full.includes(' - ')){const p=full.split(' - ');t=p[0].trim();a=p.slice(1).join(' - ').trim()}
+    $('qTitle').value=t;$('qArtist').value=a;
+    toast('已匯入，接著按「搜尋逐行歌詞」');
+  }catch(e){$('trackName').textContent='Spotify 曲目';toast('已匯入（無法取得歌名，請手動輸入）')}
+};
+
+/* ================= 本機音檔 ================= */
+$('btnFile').onclick=()=>$('fileIn').click();
+$('fileIn').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  if(S.ctrl){try{S.ctrl.pause()}catch(x){}}
+  if(ytPlayer&&ytPlayer.pauseVideo){try{ytPlayer.pauseVideo()}catch(x){}}
+  S.mode='local';$('spd').disabled=false;
+  if(S.audio){S.audio.pause();URL.revokeObjectURL(S.audio.src)}
+  S.audio=new Audio(URL.createObjectURL(f));
+  S.audio.playbackRate=parseFloat($('spd').value);
+  S.audio.addEventListener('loadedmetadata',()=>{S.dur=S.audio.duration});
+  S.audio.addEventListener('play',()=>{S.playing=true;$('cPlay').textContent='❚❚'});
+  S.audio.addEventListener('pause',()=>{S.playing=false;$('cPlay').textContent='▶'});
+  $('srcTag').textContent='LOCAL';$('srcTag').className='pill tag-e';
+  $('nowInfo').style.display='flex';
+  const nm=f.name.replace(/\.[^.]+$/,'');
+  $('trackName').textContent=nm;
+  if(!$('qTitle').value)$('qTitle').value=nm;
+  toast('音檔已載入');
+};
+$('spd').onchange=()=>{
+  const r=parseFloat($('spd').value);
+  if(S.audio)S.audio.playbackRate=r;
+  if(S.mode==='yt'&&ytPlayer&&ytPlayer.setPlaybackRate){try{ytPlayer.setPlaybackRate(r)}catch(e){}}
+};
+
+/* ================= 播放控制（統一介面） ================= */
+function getPos(){
+  if(S.mode==='yt'&&ytPlayer&&ytPlayer.getCurrentTime){try{return ytPlayer.getCurrentTime()||0}catch(e){return 0}}
+  if(S.mode==='local'&&S.audio)return S.audio.currentTime;
+  if(S.playing&&S.lastUpdate)return S.lastPos+(performance.now()-S.lastUpdate)/1000;
+  return S.pos;
+}
+function getDur(){
+  if(S.mode==='yt'&&ytPlayer&&ytPlayer.getDuration){try{return ytPlayer.getDuration()||0}catch(e){return 0}}
+  return S.mode==='local'&&S.audio?(S.audio.duration||0):S.dur;
+}
+function doPlay(){
+  if(S.mode==='yt'&&ytPlayer)return ytPlayer.playVideo();
+  if(S.mode==='local'&&S.audio)S.audio.play().catch(()=>toast('請再按一次播放'));
+  else if(S.ctrl)S.ctrl.resume?S.ctrl.resume():S.ctrl.play();
+}
+function doPause(){
+  if(S.mode==='yt'&&ytPlayer)return ytPlayer.pauseVideo();
+  if(S.mode==='local'&&S.audio)S.audio.pause();else if(S.ctrl)S.ctrl.pause();
+}
+function doToggle(){
+  if(S.mode==='yt'&&ytPlayer){S.playing?ytPlayer.pauseVideo():ytPlayer.playVideo();return}
+  if(S.mode==='local'&&S.audio){S.audio.paused?doPlay():doPause();return}
+  if(S.ctrl){S.ctrl.togglePlay();return}
+  toast('請先匯入歌曲');
+}
+function doSeek(sec){
+  sec=Math.max(0,sec);
+  if(S.mode==='yt'&&ytPlayer){ytPlayer.seekTo(sec,true);return}
+  if(S.mode==='local'&&S.audio){S.audio.currentTime=sec;return}
+  if(S.ctrl){S.ctrl.seek(sec);S.pos=sec;S.lastPos=sec;S.lastUpdate=performance.now()}
+}
+$('cPlay').onclick=doToggle;
+$('cBack').onclick=()=>doSeek(getPos()-S.set.step);
+$('cFwd').onclick=()=>doSeek(getPos()+S.set.step);
+$('cPrev').onclick=()=>jumpLine(-1);
+$('cNext').onclick=()=>jumpLine(1);
+$('cRep').onclick=()=>{S.repeatLine=!S.repeatLine;$('cRep').classList.toggle('act',S.repeatLine);toast(S.repeatLine?'單句循環：開':'單句循環：關')};
+$('cAB').onclick=()=>{
+  const p=getPos();
+  if(S.abA===null){S.abA=p;toast('A 點已設 '+fmt(p))}
+  else if(S.abB===null){if(p<=S.abA){toast('B 點要在 A 點之後');return}S.abB=p;toast('A-B 復讀啟動');$('cAB').classList.add('act')}
+  else{S.abA=null;S.abB=null;$('cAB').classList.remove('act');$('abZone').style.display='none';toast('A-B 已清除')}
+  drawAB();
+};
+function drawAB(){
+  const z=$('abZone'),d=getDur();
+  if(S.abA!==null&&S.abB!==null&&d>0){z.style.display='block';z.style.left=(S.abA/d*100)+'%';z.style.width=((S.abB-S.abA)/d*100)+'%'}
+  else z.style.display='none';
+}
+$('cFocus').onclick=()=>{S.focus=!S.focus;$('lyricBox').classList.toggle('focus-mode',S.focus);$('cFocus').classList.toggle('act',S.focus)};
+$('seek').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const d=getDur();if(d>0)doSeek((e.clientX-r.left)/r.width*d)};
+
+function jumpLine(dir){
+  if(!S.lines.length)return;
+  let i=S.idx+dir;
+  if(dir<0&&S.idx>=0&&getPos()-S.lines[S.idx].t>1.2)i=S.idx; // 本句播超過1.2秒 → 回本句開頭
+  i=Math.max(0,Math.min(S.lines.length-1,i));
+  doSeek(Math.max(0,S.lines[i].t-0.15));
+}
+
+/* ================= 主迴圈 ================= */
+function loop(){
+  const p=getPos(),d=getDur();
+  $('tCur').textContent=fmt(p)+' / '+fmt(d);
+  $('seekFill').style.width=(d>0?Math.min(100,p/d*100):0)+'%';
+  // A-B
+  if(S.abA!==null&&S.abB!==null&&p>=S.abB)doSeek(S.abA);
+  // 單句循環
+  if(S.repeatLine&&S.idx>=0&&S.idx<S.lines.length){
+    const nx=S.lines[S.idx+1];
+    if(nx&&p>=nx.t)doSeek(Math.max(0,S.lines[S.idx].t-.1));
+  }
+  // 歌詞高亮
+  if(S.lines.length){
+    let i=-1;
+    for(let k=0;k<S.lines.length;k++){if(S.lines[k].t<=p+0.05)i=k;else break}
+    if(i!==S.idx){S.idx=i;highlight()}
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ================= 歌詞：LRC 解析 ================= */
+function parseLRC(txt){
+  const out=[];
+  txt.split(/\r?\n/).forEach(line=>{
+    const tags=[...line.matchAll(/\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g)];
+    const text=line.replace(/\[[^\]]*\]/g,'').trim();
+    if(!tags.length)return;
+    tags.forEach(m=>{
+      const ms=m[3]?parseInt(m[3].padEnd(3,'0'))/1000:0;
+      out.push({t:parseInt(m[1])*60+parseInt(m[2])+ms,text});
+    });
+  });
+  out.sort((a,b)=>a.t-b.t);
+  return out.filter(l=>l.text.length);
+}
+function loadLines(arr){
+  S.lines=arr.map(l=>({t:l.t,text:l.text,zh:null}));
+  S.idx=-1;renderLyrics();
+  $('lrcStat').textContent=arr.length+' 行';$('lrcStat').className='pill tag-d';
+}
+
+/* ================= 歌詞：LRCLIB 搜尋 ================= */
+$('btnSearchLrc').onclick=async()=>{
+  const t=$('qTitle').value.trim(),a=$('qArtist').value.trim();
+  if(!t){toast('請先輸入歌名');return}
+  const box=$('lrcRes');box.innerHTML='<div class="hint"><span class="spin"></span> 搜尋中…</div>';
+  try{
+    let url='https://lrclib.net/api/search?track_name='+encodeURIComponent(t)+(a?'&artist_name='+encodeURIComponent(a):'');
+    let r=await fetch(url);let list=await r.json();
+    if(!Array.isArray(list)||!list.length){
+      r=await fetch('https://lrclib.net/api/search?q='+encodeURIComponent(t+' '+a));
+      list=await r.json();
+    }
+    const synced=(list||[]).filter(x=>x.syncedLyrics);
+    if(!synced.length){box.innerHTML='<div class="hint" style="color:#ff9066">找不到逐行歌詞。可到 lrclib.net 手動找 LRC 貼上，或用「手動打軸」。</div>';return}
+    box.innerHTML='';
+    synced.slice(0,6).forEach(x=>{
+      const d=document.createElement('div');d.className='res-item';
+      d.innerHTML=`<b>${esc(x.trackName)}</b><small>${esc(x.artistName||'')} · ${esc(x.albumName||'')} · ${fmt(x.duration||0)}</small>`;
+      d.onclick=()=>{loadLines(parseLRC(x.syncedLyrics));box.innerHTML='<div class="hint" style="color:var(--green)">✓ 已載入：'+esc(x.trackName)+'</div>';toast('歌詞已載入，開始播放吧')};
+      box.appendChild(d);
+    });
+  }catch(e){box.innerHTML='<div class="hint" style="color:#ff9066">連線失敗，請改用「手動貼上」。</div>'}
+};
+function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* ================= 歌詞：手動貼上 / 打軸 ================= */
+$('btnPasteLrc').onclick=()=>$('ovPaste').classList.add('show');
+$('btnApplyPaste').onclick=()=>{
+  const txt=$('pasteArea').value;
+  if(!txt.trim()){toast('請先貼上歌詞');return}
+  const lrc=parseLRC(txt);
+  if(lrc.length){loadLines(lrc);toast('LRC 已套用')}
+  else{
+    const lines=txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    loadLines(lines.map((text,i)=>({t:i*1e6,text})));
+    toast('已載入純文字歌詞，請用「手動打軸」對時間');
+  }
+  $('ovPaste').classList.remove('show');
+};
+$('btnSyncMode').onclick=()=>{
+  const txt=$('pasteArea').value.trim();
+  if(txt){const lines=txt.split(/\r?\n/).map(s=>s.replace(/\[[^\]]*\]/g,'').trim()).filter(Boolean);
+    S.lines=lines.map(text=>({t:1e6,text,zh:null}))}
+  if(!S.lines.length){toast('請先貼上歌詞文字');return}
+  S.syncMode=true;S.syncBuf=0;renderLyrics();
+  $('ovPaste').classList.remove('show');
+  toast('打軸模式：播放後每句按一次空白鍵',3500);
+};
+function syncStamp(){
+  if(S.syncBuf>=S.lines.length){S.syncMode=false;toast('打軸完成！');renderLyrics();return}
+  S.lines[S.syncBuf].t=getPos();
+  S.syncBuf++;
+  if(S.syncBuf>=S.lines.length){S.syncMode=false;S.lines.sort((a,b)=>a.t-b.t);renderLyrics();toast('打軸完成！')}
+  else{S.idx=S.syncBuf-1;highlight();toast('已記錄第 '+S.syncBuf+' 句',800)}
+}
+
+/* ================= 歌詞渲染 ================= */
+function tokenize(text){
+  // 保留標點，只把「字母/撇號」序列變成可點單字
+  return text.split(/(\b[A-Za-z][A-Za-z'’\-]*\b)/g).filter(s=>s!=='');
+}
+function renderLyrics(){
+  const box=$('lyricBox');
+  if(!S.lines.length){box.innerHTML='<div class="empty">🎧 匯入歌曲並載入歌詞後<br>歌詞會在這裡跟著音樂跑</div>';return}
+  box.innerHTML='';
+  S.lines.forEach((L,i)=>{
+    const div=document.createElement('div');div.className='line';div.dataset.i=i;
+    const en=document.createElement('div');en.className='en';
+    const parts=tokenize(L.text);
+    parts.forEach(p=>{
+      if(/^[A-Za-z][A-Za-z'’\-]*$/.test(p)){
+        const sp=document.createElement('span');sp.className='w';sp.textContent=p;
+        if(S.vocab.some(v=>v.w.toLowerCase()===p.toLowerCase()))sp.classList.add('saved');
+        if(S.quiz&&p.length>3&&Math.random()<.28){sp.classList.add('blank')}
+        sp.onclick=ev=>{ev.stopPropagation();
+          if(sp.classList.contains('blank')&&!sp.classList.contains('revealed')){sp.classList.add('revealed');return}
+          openWord(p,L.text)};
+        en.appendChild(sp);
+      }else en.appendChild(document.createTextNode(p));
+    });
+    div.appendChild(en);
+    const zh=document.createElement('div');zh.className='zh';div.appendChild(zh);
+    const tools=document.createElement('div');tools.className='line-tools';
+    const b1=document.createElement('button');b1.className='mini';b1.textContent='🔊';b1.title='唸整句';
+    b1.onclick=e=>{e.stopPropagation();speak(L.text)};
+    const b2=document.createElement('button');b2.className='mini';b2.textContent='中';b2.title='翻譯整句';
+    b2.onclick=async e=>{e.stopPropagation();if(zh.classList.contains('show')){zh.classList.remove('show');return}
+      zh.textContent='翻譯中…';zh.classList.add('show');zh.textContent=await translate(L.text)};
+    tools.appendChild(b1);tools.appendChild(b2);div.appendChild(tools);
+    div.onclick=()=>{if(L.t<1e5)doSeek(Math.max(0,L.t-.1))};
+    box.appendChild(div);
+  });
+  highlight();
+}
+function highlight(){
+  const box=$('lyricBox');const kids=box.children;
+  for(let i=0;i<kids.length;i++){
+    const el=kids[i];if(!el.classList.contains('line'))continue;
+    el.classList.toggle('active',i===S.idx);
+    el.classList.toggle('past',i<S.idx);
+    el.classList.toggle('near',Math.abs(i-S.idx)<=1);
+  }
+  const cur=kids[S.idx];
+  if(cur&&S.set.autoScroll){
+    box.scrollTo({top:cur.offsetTop-box.clientHeight/2+cur.clientHeight/2,behavior:'smooth'});
+    if(S.set.lineTrans){
+      const zh=cur.querySelector('.zh');
+      if(zh&&!zh.classList.contains('show')){zh.classList.add('show');zh.textContent='…';
+        translate(S.lines[S.idx].text).then(t=>zh.textContent=t)}
+    }
+  }
+}
+
+/* ================= 挖空模式 ================= */
+$('btnQuiz').onclick=()=>{S.quiz=!S.quiz;$('btnQuiz').classList.toggle('on',S.quiz);renderLyrics();toast(S.quiz?'挖空模式：開（點空格看答案）':'挖空模式：關')};
+
+/* ================= 發音 ================= */
+let voices=[];
+function loadVoices(){voices=window.speechSynthesis?speechSynthesis.getVoices():[]}
+if(window.speechSynthesis){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function speak(text){
+  if(!window.speechSynthesis){toast('此瀏覽器不支援語音');return}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang=S.set.voice;u.rate=parseFloat(S.set.rate);
+  const v=voices.find(x=>x.lang&&x.lang.replace('_','-')===S.set.voice)||voices.find(x=>x.lang&&x.lang.startsWith('en'));
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+function googleTTS(word){
+  // 備援：Google 翻譯發音
+  const a=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q='+encodeURIComponent(word));
+  a.play().catch(()=>toast('發音載入失敗，改用瀏覽器語音'));
+}
+
+/* ================= 翻譯 ================= */
+async function translate(text,tl='zh-TW'){
+  try{
+    const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl='+tl+'&dt=t&q='+encodeURIComponent(text));
+    const j=await r.json();
+    if(j&&j[0])return j[0].map(x=>x[0]).join('');
+  }catch(e){}
+  try{
+    const r=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=en|'+tl);
+    const j=await r.json();
+    if(j&&j.responseData&&j.responseData.translatedText)return j.responseData.translatedText;
+  }catch(e){}
+  return '（翻譯服務暫時無法使用）';
+}
+
+/* ================= 單字小視窗 ================= */
+async function openWord(word,context){
+  const w=word.replace(/[’']s$/,'').toLowerCase();
+  if(S.set.autoPause&&S.playing)doPause();
+  $('ovWord').classList.add('show');
+  const b=$('wordBody');
+  b.innerHTML=`
+    <div class="word-head"><h2>${esc(word)}</h2>
+      <button class="cbtn" id="wSpeak" title="唸這個字">🔊</button>
+      <button class="cbtn" id="wSlow" title="慢速">🐢</button>
+    </div>
+    <div class="phon" id="wPhon"><span class="spin"></span></div>
+    <div class="sec-t">中文翻譯</div><div class="trans" id="wTrans"><span class="spin"></span></div>
+    <div class="sec"><div class="sec-t">英文釋義</div><div id="wDef" style="color:var(--text2);font-size:.85rem"><span class="spin"></span></div></div>
+    <div class="sec"><div class="sec-t">出現的句子</div><div style="font-size:.85rem;color:var(--text2);line-height:1.7">${esc(context)}</div>
+      <button class="btn" id="wCtxTr" style="margin-top:.6rem">翻譯整句</button>
+      <div id="wCtxOut" style="margin-top:.5rem;color:var(--accent2);filter:brightness(1.5);font-size:.85rem"></div>
+    </div>
+    <button class="btn primary" id="wSave" style="width:100%;justify-content:center;margin-top:1.2rem">加入生字本</button>`;
+  $('wSpeak').onclick=()=>speak(w);
+  $('wSlow').onclick=()=>{const r=S.set.rate;S.set.rate=.5;speak(w);S.set.rate=r};
+  $('wCtxTr').onclick=async()=>{$('wCtxOut').innerHTML='<span class="spin"></span>';$('wCtxOut').textContent=await translate(context)};
+  if(S.set.autoSpeak)setTimeout(()=>speak(w),250);
+
+  let zhText='';
+  translate(w).then(t=>{zhText=t;$('wTrans').textContent=t});
+
+  // 字典
+  try{
+    const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w));
+    if(!r.ok)throw 0;
+    const j=await r.json();const e0=j[0];
+    const ph=e0.phonetic||(e0.phonetics||[]).map(p=>p.text).filter(Boolean)[0]||'';
+    const au=(e0.phonetics||[]).map(p=>p.audio).filter(Boolean)[0];
+    $('wPhon').innerHTML=ph?esc(ph)+(au?' <span style="color:var(--text2);font-size:.75rem">· 有真人發音</span>':''):'—';
+    if(au)$('wSpeak').onclick=()=>{const a=new Audio(au);a.play().catch(()=>speak(w))};
+    let html='';
+    (e0.meanings||[]).slice(0,3).forEach(m=>{
+      const d=(m.definitions||[])[0];if(!d)return;
+      html+=`<div class="def"><em>${esc(m.partOfSpeech)}</em>${esc(d.definition)}${d.example?`<div class="ex">e.g. ${esc(d.example)}</div>`:''}</div>`;
+    });
+    $('wDef').innerHTML=html||'—';
+  }catch(e){$('wPhon').textContent='—';$('wDef').innerHTML='<span style="color:var(--text2)">查無字典資料（可能是專有名詞或口語拼法）</span>'}
+
+  $('wSave').onclick=()=>{
+    if(S.vocab.some(v=>v.w.toLowerCase()===w)){toast('生字本裡已經有了');return}
+    S.vocab.unshift({w:word,zh:zhText||$('wTrans').textContent,ctx:context,d:Date.now()});
+    ST.set('ll_vocab',JSON.stringify(S.vocab));renderVocabCount();
+    document.querySelectorAll('.w').forEach(sp=>{if(sp.textContent.toLowerCase()===w)sp.classList.add('saved')});
+    toast('✓ 已加入生字本');$('wSave').textContent='已加入';$('wSave').disabled=true;
+  };
+  if(S.vocab.some(v=>v.w.toLowerCase()===w)){$('wSave').textContent='已在生字本中';$('wSave').disabled=true}
+}
+
+/* ================= 生字本 ================= */
+function renderVocabCount(){$('vocabCount').textContent=S.vocab.length}
+$('btnVocab').onclick=()=>{
+  const b=$('vocabBody');
+  if(!S.vocab.length){b.innerHTML='<div class="empty">生字本還是空的<br>點歌詞裡的單字 → 加入生字本</div>'}
+  else{
+    b.innerHTML='';
+    S.vocab.forEach((v,i)=>{
+      const d=document.createElement('div');d.className='vocab-item';
+      d.innerHTML=`<div style="flex:1"><b>${esc(v.w)}</b> <span style="color:var(--green);font-size:.85rem">${esc(v.zh)}</span><small>${esc(v.ctx)}</small></div>`;
+      const s=document.createElement('button');s.className='mini';s.textContent='🔊';s.onclick=()=>speak(v.w);
+      const x=document.createElement('button');x.className='mini';x.textContent='×';
+      x.onclick=()=>{S.vocab.splice(i,1);ST.set('ll_vocab',JSON.stringify(S.vocab));renderVocabCount();$('btnVocab').onclick();renderLyrics()};
+      d.appendChild(s);d.appendChild(x);b.appendChild(d);
+    });
+  }
+  $('ovVocab').classList.add('show');
+};
+$('btnExport').onclick=()=>{
+  if(!S.vocab.length){toast('生字本是空的');return}
+  const csv='\uFEFF'+'單字,中文,例句\n'+S.vocab.map(v=>`"${v.w}","${(v.zh||'').replace(/"/g,'""')}","${(v.ctx||'').replace(/"/g,'""')}"`).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='lyric-lab-vocab.csv';a.click();
+  toast('已匯出 CSV（可直接匯入 Anki / Quizlet）');
+};
+
+/* ================= 設定 ================= */
+$('btnSet').onclick=()=>$('ovSet').classList.add('show');
+$('btnHelp').onclick=()=>$('ovHelp').classList.add('show');
+document.querySelectorAll('.tg').forEach(t=>t.onclick=()=>{
+  S.set[t.dataset.set]=!S.set[t.dataset.set];t.classList.toggle('on',S.set[t.dataset.set]);saveSet();
+});
+$('voiceSel').onchange=e=>{S.set.voice=e.target.value;saveSet()};
+$('rateSel').onchange=e=>{S.set.rate=e.target.value;saveSet()};
+$('stepSel').onchange=e=>{S.set.step=parseInt(e.target.value);saveSet();$('cBack').textContent='-'+S.set.step+'s';$('cFwd').textContent='+'+S.set.step+'s'};
+$('fsRange').oninput=e=>{S.set.fs=e.target.value;$('lyricBox').style.fontSize=S.set.fs+'%';saveSet()};
+
+/* ================= 系統診斷 ================= */
+$('btnDiag').onclick=async()=>{
+  const out=$('diagOut');out.innerHTML='<span class="spin"></span> 檢測中…';
+  const rows=[];
+  const ok=t=>`<span style="color:var(--green)">✓</span> ${t}`;
+  const no=t=>`<span style="color:#ff9066">✗</span> ${t}`;
+  const wr=t=>`<span style="color:var(--yellow)">!</span> ${t}`;
+
+  rows.push(location.protocol==='https:'||location.protocol==='http:'
+    ? ok('網頁協定 '+location.protocol)
+    : wr('本機檔案模式（file://）— 部分服務會被擋，建議上傳 GitHub Pages'));
+  rows.push(window.self!==window.top ? wr('頁面在 iframe 中（可能是預覽視窗，會擋第三方播放器）') : ok('非 iframe，環境正常'));
+  rows.push(ytReady&&window.YT&&YT.Player ? ok('YouTube 播放器 API 已載入') : no('YouTube API 未載入（被擋或網路問題）'));
+  rows.push(spReady&&spAPI ? ok('Spotify 嵌入 API 已載入') : no('Spotify API 未載入'));
+  rows.push(window.speechSynthesis ? ok('語音合成可用（'+((window.speechSynthesis.getVoices()||[]).length)+' 個語音）') : no('瀏覽器不支援語音合成'));
+  out.innerHTML=rows.join('<br>')+'<br><span class="spin"></span> 測試網路服務…';
+
+  async function test(name,url){
+    try{const c=new AbortController();const id=setTimeout(()=>c.abort(),8000);
+      const r=await fetch(url,{signal:c.signal});clearTimeout(id);
+      return r.ok?ok(name+' 連線正常'):wr(name+' 回應 '+r.status);
+    }catch(e){return no(name+' 無法連線（CORS 或網路被擋）')}
+  }
+  rows.push(await test('LRCLIB 歌詞','https://lrclib.net/api/search?track_name=hello'));
+  rows.push(await test('字典 API','https://api.dictionaryapi.dev/api/v2/entries/en/hello'));
+  rows.push(await test('Google 翻譯','https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-TW&dt=t&q=hello'));
+  out.innerHTML=rows.join('<br>');
+};
+
+/* ================= Modal 關閉 ================= */
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.ov').classList.remove('show'));
+document.querySelectorAll('.ov').forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove('show')});
+
+/* ================= 快捷鍵 ================= */
+document.addEventListener('keydown',e=>{
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+  if(gate.style.display!=='none')return;
+  const k=e.key.toLowerCase();
+  if(e.key===' '){e.preventDefault();if(S.syncMode)syncStamp();else doToggle()}
+  else if(e.key==='ArrowLeft'){e.preventDefault();doSeek(getPos()-S.set.step)}
+  else if(e.key==='ArrowRight'){e.preventDefault();doSeek(getPos()+S.set.step)}
+  else if(e.key==='ArrowUp'){e.preventDefault();jumpLine(-1)}
+  else if(e.key==='ArrowDown'){e.preventDefault();jumpLine(1)}
+  else if(k==='r')$('cRep').click();
+  else if(k==='l')$('cAB').click();
+  else if(k==='f')$('cFocus').click();
+  else if(e.key==='Escape')document.querySelectorAll('.ov.show').forEach(o=>o.classList.remove('show'));
+});
+</script>
+</body>
+</html>

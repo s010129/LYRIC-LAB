@@ -85,7 +85,7 @@ textarea{resize:vertical;min-height:130px;font-family:ui-monospace,monospace;fon
 .tag-c{background:rgba(255,107,53,.15);border-color:rgba(255,107,53,.4);color:#ff9066}
 
 /* ---------- 歌詞區 ---------- */
-#lyricBox{height:52vh;min-height:300px;overflow-y:auto;padding:22vh .4rem;scroll-behavior:smooth}
+#lyricBox{position:relative;height:52vh;min-height:300px;overflow-y:auto;padding:22vh .4rem;scroll-behavior:smooth;overscroll-behavior:contain}
 #lyricBox.focus-mode{height:34vh;min-height:190px;padding:14vh .4rem}
 .line{padding:.5rem .7rem;border-radius:10px;cursor:default;transition:all .25s;position:relative;line-height:1.75}
 .line .en{font-size:1.02rem;color:var(--text2);transition:all .25s;word-spacing:1px}
@@ -789,14 +789,23 @@ function highlight(){
     el.classList.toggle('near',Math.abs(i-S.idx)<=1);
   }
   const cur=kids[S.idx];
-  if(cur&&S.set.autoScroll){
-    box.scrollTo({top:cur.offsetTop-box.clientHeight/2+cur.clientHeight/2,behavior:'smooth'});
+  if(cur&&S.set.autoScroll&&!userScrolling){
+    const target=cur.offsetTop-(box.clientHeight-cur.offsetHeight)/2;
+    box.scrollTo({top:Math.max(0,target),behavior:'smooth'});
     if(S.set.lineTrans){
       const zh=cur.querySelector('.zh');
       if(zh&&!zh.classList.contains('show')){zh.classList.add('show');zh.textContent='…';
         translate(S.lines[S.idx].text).then(t=>zh.textContent=t)}
     }
   }
+}
+/* 使用者手動捲動歌詞時，暫停自動歸位 4 秒 */
+var userScrolling=false,usTimer=null;
+$('lyricBox').addEventListener('touchstart',pauseAuto,{passive:true});
+$('lyricBox').addEventListener('wheel',pauseAuto,{passive:true});
+function pauseAuto(){
+  userScrolling=true;clearTimeout(usTimer);
+  usTimer=setTimeout(()=>{userScrolling=false;highlight()},4000);
 }
 
 /* ================= 挖空模式 ================= */
